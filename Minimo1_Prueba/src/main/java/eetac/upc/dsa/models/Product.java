@@ -27,7 +27,7 @@ public class Product {
 
     // Setters y Getters
 
-    public int GetId(){return this.id;}
+    public int GetProductId(){return this.id;}
     public String GetName(){return this.name;}
     public void SetName(String name){this.name = name;}
     public String GetDescription(){return this.description;}

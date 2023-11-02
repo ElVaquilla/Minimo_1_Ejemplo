@@ -18,7 +18,7 @@ public class Team {
     }
 
     // Setters y Getters
-    public int GetId(){return this.id;}
+    public int GetTeamId(){return this.id;}
     public String GetMembers(){return this.members;}
     public void SetMembers(String members){this.members = members;}
     public int GetNum(){return this.num_members;}
