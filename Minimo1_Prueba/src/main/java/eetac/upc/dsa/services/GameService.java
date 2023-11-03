@@ -3,6 +3,7 @@ package eetac.upc.dsa.services;
 import eetac.upc.dsa.GameManager;
 import eetac.upc.dsa.GameManagerImpl;
 import eetac.upc.dsa.models.Game;
+import eetac.upc.dsa.models.User;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
@@ -22,9 +23,9 @@ public class GameService {
     public GameService() {
         this.gm = GameManagerImpl.getInstance();
         if (gm.GameSize()==0) {
-            this.gm.addGame(0);
-            this.gm.addGame(1);
-            this.gm.addGame(2);
+            this.gm.addGame("Prince of persia", 5);
+            this.gm.addGame("Doom", 10);
+            this.gm.addGame("Wolfenstein", 13);
         }
     }
 
@@ -48,7 +49,7 @@ public class GameService {
     @ApiOperation(value = "get a Game", notes = "asdasd")
     @ApiResponses(value = {
             @ApiResponse(code = 201, message = "Successful", response = Game.class),
-            @ApiResponse(code = 404, message = "Track not found")
+            @ApiResponse(code = 404, message = "Game not found")
     })
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -57,38 +58,6 @@ public class GameService {
         if (g == null) return Response.status(404).build();
         else  return Response.status(201).entity(g).build();
     }
-
-    @DELETE
-    @ApiOperation(value = "delete a Game", notes = "asdasd")
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful"),
-            @ApiResponse(code = 404, message = "Track not found")
-    })
-    @Path("/{id}")
-    public Response deleteGame(@PathParam("id") int id) {
-        Game g = this.gm.getGame(id);
-        if (g == null) return Response.status(404).build();
-        else this.gm.deleteGame(id);
-        return Response.status(201).build();
-    }
-
-    @PUT
-    @ApiOperation(value = "update a Game", notes = "asdasd")
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Successful"),
-            @ApiResponse(code = 404, message = "Track not found")
-    })
-    @Path("/")
-    public Response updateGame(Game game) {
-
-        Game g = this.gm.updateGame(game);
-
-        if (g == null) return Response.status(404).build();
-
-        return Response.status(201).build();
-    }
-
-
 
     @POST
     @ApiOperation(value = "create a new Game", notes = "asdasd")
@@ -102,9 +71,29 @@ public class GameService {
     @Consumes(MediaType.APPLICATION_JSON)
     public Response newGame(Game game) {
 
-        if (game.GetState() != 0 && game.GetState() != 1 && game.GetState() != 2 && game.GetState() != 3)  return Response.status(500).entity(game).build();
+        if (game.GetDescription() == null || game.GetLevels() == 0)  return Response.status(500).entity(game).build();
         this.gm.addGame(game);
         return Response.status(201).entity(game).build();
     }
 
+    @GET
+    @ApiOperation(value = "Get all users that played a game", notes = "asdasd")
+    @ApiResponses(value = {
+            @ApiResponse(code = 201, message = "Successful", response = User.class),
+            @ApiResponse(code = 404, message = "Game not found")
+    })
+    @Path("/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getUsersByGame(@PathParam("id") int id) {
+        if(this.gm.getGame(id) != null){
+            Game g = this.gm.getGame(id);
+            List<User> users = this.gm.findAllUsersInGame(g);
+
+            GenericEntity<List<User>> entity = new GenericEntity<List<User>>(users) {};
+            return Response.status(201).entity(entity).build()  ;
+
+        }
+        else
+            return Response.status(404).build();
+    }
 }

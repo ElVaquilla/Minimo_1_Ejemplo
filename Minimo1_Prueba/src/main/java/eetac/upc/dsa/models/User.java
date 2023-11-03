@@ -5,23 +5,21 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class User {
     int id;
     static AtomicInteger nextId = new AtomicInteger();
-    String name;
-    String last_name;
     String username;
-    int dsa_coins;
-    int life;   // 1000 es el máximo de vida
-    int armor;  // 1000 valor máximo
-                // Al inicio siempre es 0
+    int points;   // Puntos en partida
+    int level;  // Nivel del jugador
+    boolean partida;    // Indica si el usuario está en una partida, SOLO UNA PARTIDA A LA VEZ
+    String date;        // Fecha de la ultima subida de nivel
+    int gameId;
 
     // Constructores
-    public User(String name, String last_name, String username){
+    public User(String username){
         this();
-        this.name = name;
-        this.last_name = last_name;
         this.username = username;
-        this.dsa_coins = 25;
-        this.life = 1000;
-        this.armor = 0;
+        this.points = 0;
+        this.level = 0;
+        this.partida = false;
+        this.date = date;
         this.id = nextId.incrementAndGet();
     }
 
@@ -29,16 +27,16 @@ public class User {
 
     // Setters y Getters
     public int  GetUserId(){return this.id;}
-    public String GetName(){return this.name;}
-    public void SetName(String name){this.name = name;}
-    public String GetLastName(){return this.last_name;}
-    public void SetLastName(String last_name){this.last_name = last_name;}
     public String GetUserName(){return this.username;}
     public void SetUserName(String username){this.username = username;}
-    public int GetDSACoins(){return this.dsa_coins;}
-    public void SetDSACoins(int dsa_coins){this.dsa_coins = dsa_coins;}
-    public int GetLife(){return this.life;}
-    public void SetLife(int life){this.life = life;}
-    public int GetArmor(){return this.armor;}
-    public void SetArmor(int armor){this.armor = armor;}
+    public int GetLevel(){return this.level;}
+    public void SetLevel(int level){this.level = level;}
+    public int GetPoints(){return this.points;}
+    public void SetPoints(int points){this.points = this.points + points;}
+    public boolean GetPartida(){return this.partida;}
+    public void SetPartida(boolean partida){this.partida = partida;}
+    public void SetDate(String date){this.date = date;}
+    public String GetDate(){return this.date;}
+    public int GetGameId(){return this.gameId;}
+    public void SetGameId(int id){this.gameId = id;}
 }

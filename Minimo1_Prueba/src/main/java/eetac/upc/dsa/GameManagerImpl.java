@@ -5,22 +5,21 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import eetac.upc.dsa.models.User;
-import eetac.upc.dsa.models.Team;
-import eetac.upc.dsa.models.Product;
 import eetac.upc.dsa.models.Game;
 
 public class GameManagerImpl implements GameManager {
     private static GameManager instance;
     protected List<Game> Games;
     protected List<User> Users;
-    protected List<Team> Teams;
-    protected List<Product> Products;
+    protected List<Game> Juegos;
+    protected List<User> Usuarios;
+
     final static Logger logger = Logger.getLogger(GameManagerImpl.class);
     private GameManagerImpl() {
         this.Games = new LinkedList<>();
         this.Users = new LinkedList<>();
-        this.Teams = new LinkedList<>();
-        this.Products = new LinkedList<>();
+        this.Juegos = new LinkedList<>();
+        this.Usuarios = new LinkedList<>();
     }
 
     public static GameManager getInstance() {
@@ -36,24 +35,26 @@ public class GameManagerImpl implements GameManager {
         return ret;
     }
 
-    public int TeamSize() {
-        int ret = this.Teams.size();
-        logger.info("Team size " + ret);
-
+    public int JuegosSize() {
+        int ret = this.Juegos.size();
+        logger.info("Se ha jugado a " + ret + "Juegos");
         return ret;
     }
+
+    public int UsuariosSize() {
+        int ret = this.Usuarios.size();
+        logger.info("Han jugado " + ret + "usuarios");
+        return ret;
+    }
+
+
     public int UserSize() {
         int ret = this.Users.size();
         logger.info("User size " + ret);
 
         return ret;
     }
-    public int ProductSize() {
-        int ret = this.Products.size();
-        logger.info("Product size " + ret);
 
-        return ret;
-    }
     public Game addGame(Game g) {
         logger.info("new Game " + g);
 
@@ -61,7 +62,8 @@ public class GameManagerImpl implements GameManager {
         logger.info("new Game added");
         return g;
     }
-    public Game addGame(int state_of_game) { return this.addGame(new Game(state_of_game)); }
+    public Game addGame(String description, int levels) { return this.addGame(new Game(description, levels)); }
+
     public User addUser(User u) {
         logger.info("new User " + u);
 
@@ -69,23 +71,23 @@ public class GameManagerImpl implements GameManager {
         logger.info("new User added");
         return u;
     }
-    public User addUser(String name, String last_name, String user_name) { return this.addUser(new User(name, last_name, user_name)); }
-    public Team addTeam(Team t) {
-        logger.info("new Team " + t);
+    public User addUser(String user_name) { return this.addUser(new User(user_name)); }
 
-        this.Teams.add (t);
-        logger.info("new Team added");
-        return t;
+    public void startGame(Game g, User u) {
+        if(u.GetPartida() != true)
+        {
+            logger.info(u.GetUserName()+ " inicia " +g.GetDescription());
+            u.SetLevel(1);
+            u.SetPartida(true);
+            u.SetPoints(50);
+            this.Juegos.add(g);
+            this.Usuarios.add(u);
+        }
+        if(u.GetPartida() == true)
+        {
+            logger.error("Error, el ususario ya está en una partida");
+        }
     }
-    public Team addTeam(String members, int team_life, int num_members) { return this.addTeam(new Team(members, team_life, num_members)); }
-    public Product addProduct(Product p) {
-        logger.info("new Product " + p);
-
-        this.Products.add (p);
-        logger.info("new Products added");
-        return p;
-    }
-    public Product addProduct(String name, int price, String description, int effect_life, boolean type) { return this.addProduct(new Product(name, price, description, effect_life, type)); }
 
     public Game getGame(int id) {
         logger.info("getGame("+id+")");
@@ -98,24 +100,17 @@ public class GameManagerImpl implements GameManager {
             }
         }
 
-        logger.warn("not found " + id);
+        logger.error("not found " + id);
         return null;
     }
 
-    public Team getTeam(int id) {
-        logger.info("getTeam("+id+")");
-
-        for (Team t: this.Teams) {
-            if (t.GetTeamId() == id) {
-                logger.info("getTeam("+id+"): "+t);
-
-                return t;
-            }
-        }
-
-        logger.warn("not found " + id);
-        return null;
+    @Override
+    public int getLevels(int id) {
+        Game g = this.getGame(id);
+        return g.GetLevels();
     }
+
+
     public User getUser(int id) {
         logger.info("getUser("+id+")");
 
@@ -127,163 +122,71 @@ public class GameManagerImpl implements GameManager {
             }
         }
 
-        logger.warn("not found " + id);
+        logger.error("not found " + id);
         return null;
     }
-    public Product getProduct(int id) {
-        logger.info("getProduct("+id+")");
 
-        for (Product p: this.Products) {
-            if (p.GetProductId() == id) {
-                logger.info("getProduct("+id+"): "+p);
-
-                return p;
-            }
+    @Override
+    public int getLevel(int id) {
+        User u = this.getUser(id);
+        if(u != null) {
+            logger.info(u.GetUserName() + " está en el nivel " + u.GetLevel());
+            return u.GetLevel();
         }
-
-        logger.warn("not found " + id);
-        return null;
+        return -1;
     }
+
+    @Override
+    public int getPoints(int id) {
+        User u = this.getUser(id);
+        if(u != null) {
+            logger.info(u.GetUserName() + " tiene " + u.GetPoints() +" puntos");
+            return u.GetPoints();
+        }
+        return -1;
+    }
+
+    @Override
+    public void endGame(int id) { User user = this.getUser(id); user.SetPartida(false); }
 
     public List<Game> findAllGames() {
         return this.Games;
     }
-    public List<Team> findAllTeams() {
-        return this.Teams;
-    }
+
+    @Override
+    public List<Game> findAllGamesInUser(User user) { return this.Juegos; }
+
     public List<User> findAllUsers() {
         return this.Users;
     }
-    public List<Product> findAllProducts() {
-        return this.Products;
-    }
 
     @Override
-    public void deleteGame(int id) {
-        Game g = this.getGame(id);
-        if (g==null) {
-            logger.warn("not found " + g);
-        }
-        else logger.info(g+" deleted ");
-
-        this.Games.remove(g);
-    }
+    public List<User> findAllUsersInGame(Game game) { return this.Usuarios; }
 
     @Override
-    public Game updateGame(Game game) {
-        Game g = this.getGame(game.GetGameId());
-
-        if (g!=null) {
-            logger.info(game+" rebut!!!! ");
-
-            g.SetState(game.GetState());
-
-            logger.info(g+" updated ");
-        }
-        else {
-            logger.warn("not found "+game);
-        }
-        return g;
-    }
-
-
-
-    @Override
-    public void deleteTeam(int id) {
-        Team t = this.getTeam(id);
-        if (t==null) {
-            logger.warn("not found " + t);
-        }
-        else logger.info(t+" deleted ");
-
-        this.Teams.remove(t);
-    }
-
-    @Override
-    public Team updateTeam(Team team) {
-        Team t = this.getTeam(team.GetTeamId());
-
-        if (t!=null) {
-            logger.info(team+" rebut!!!! ");
-
-            t.SetMembers(team.GetMembers());
-            t.SetNum(team.GetNum());
-            t.SetTeamLife(team.GetTeamLife());
-
-            logger.info(t+" updated ");
-        }
-        else {
-            logger.warn("not found "+team);
-        }
-        return t;
-    }
-
-
-
-    @Override
-    public void deleteUser(int id) {
+    public User nextlevelUser(int id, int points, String date) {
         User u = this.getUser(id);
-        if (u==null) {
-            logger.warn("not found " + u);
-        }
-        else logger.info(u+" deleted ");
-
-        this.Users.remove(u);
-    }
-
-    @Override
-    public User updateUser(User usr) {
-        User u = this.getUser(usr.GetUserId());
-
+        Game g = this.getGame(u.GetGameId());
         if (u!=null) {
-            logger.info(usr+" rebut!!!! ");
+            logger.info(" rebut!!!! ");
 
-            u.SetName(usr.GetName());
-            u.SetLastName(usr.GetLastName());
-            u.SetUserName(usr.GetUserName());
-            u.SetDSACoins(usr.GetDSACoins());
-            u.SetLife(usr.GetLife());
-            u.SetArmor(usr.GetArmor());
+            if(u.GetPartida() == true && u.GetLevel() < g.GetLevels())
+            {
+                u.SetLevel(u.GetLevel() + 1);
+                u.SetPoints(points);
+            }
+            if(u.GetPartida()== true && u.GetLevel() == g.GetLevels())
+            {
+                u.SetPoints(100);
+                this.endGame(id);
+            }
+            u.SetDate(date);
 
-            logger.info(u+" updated ");
+            logger.info("User updated ");
         }
         else {
-            logger.warn("not found "+usr);
+            logger.error("User not found ");
         }
         return u;
-    }
-
-
-
-    @Override
-    public void deleteProduct(int id) {
-        Product p = this.getProduct(id);
-        if (p==null) {
-            logger.warn("not found " + p);
-        }
-        else logger.info(p+" deleted ");
-
-        this.Products.remove(p);
-    }
-
-    @Override
-    public Product updateProduct(Product product) {
-        Product p = this.getProduct(product.GetProductId());
-
-        if (p!=null) {
-            logger.info(product+" rebut!!!! ");
-
-            p.SetName(product.GetName());
-            p.SetDescription(product.GetDescription());
-            p.SetPrice(product.GetPrice());
-            p.SetType(product.GetType());
-            p.SetEffect(product.GetEffect());
-
-            logger.info(p+" updated ");
-        }
-        else {
-            logger.warn("not found "+product);
-        }
-        return p;
     }
 }
